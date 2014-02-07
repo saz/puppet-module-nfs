@@ -38,23 +38,35 @@
 #
 
 class nfs::server (
-  $nfs_v4                       = $nfs::params::nfs_v4,
-  $nfs_v4_export_root           = $nfs::params::nfs_v4_export_root,
-  $nfs_v4_export_root_clients   = $nfs::params::nfs_v4_export_root_clients,
-  $nfs_v4_idmap_domain          = $nfs::params::domain,
-  $nfs_v4_root_export_ensure    = 'mounted',
-  $nfs_v4_root_export_mount     = undef,
-  $nfs_v4_root_export_remounts  = false,
-  $nfs_v4_root_export_atboot    = false,
-  $nfs_v4_root_export_options   = '_netdev',
-  $nfs_v4_root_export_bindmount = undef,
-  $nfs_v4_root_export_tag       = undef
+  $idmap_domain = $::domain
 ) inherits nfs::params {
 
-  include  nfs::server::configure
+  package { $nfs::params::server_package_name:
+    ensure => present,
+  }
 
-  class{ "nfs::server::${osfamily}":
-    nfs_v4              => $nfs_v4,
-    nfs_v4_idmap_domain => $nfs_v4_idmap_domain,
+  concat { '/etc/exports':
+    require => Package[$nfs::params::server_package_name],
+  }
+
+  concat::fragment { 'nfs_exports_header':
+    target  => '/etc/exports',
+    content => "# This file is managed by puppet\n",
+    order   => 00,
+  }
+
+  if ! defined(Class['nfs::common']) {
+    class { 'nfs::common':
+      idmap_domain => $idmap_domain,
+      require      => Concat['/etc/exports'],
+    }
+  }
+
+  service { $nfs::params::server_service_name:
+    ensure     => running,
+    enable     => true,
+    hasstatus  => $nfs::params::server_service_hasstatus,
+    hasrestart => $nfs::params::server_service_hasrestart,
+    require    => Class['nfs::common'],
   }
 }

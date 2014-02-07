@@ -39,14 +39,29 @@
 #
 
 class nfs::client (
-  $nfs_v4              = $nfs::params::nfs_v4,
-  $nfs_v4_mount_root   = $nfs::params::nfs_v4_mount_root,
-  $nfs_v4_idmap_domain = $nfs::params::nfs_v4_idmap_domain
+  $nfs_v4_idmap_domain = $::domain
 ) inherits nfs::params {
 
-  class{ "nfs::client::${osfamily}":
-    nfs_v4              => $nfs_v4,
-    nfs_v4_idmap_domain => $nfs_v4_idmap_domain,
+  package { $nfs::params::client_package_name:
+    ensure => installed,
   }
 
+  package { $nfs::params::nfs4_package_name:
+    ensure  => installed,
+    require => Package[$nfs::params::client_package_name],
+  }
+
+  if ! defined(Class['nfs::common']) {
+    class { 'nfs::common':
+      idmap_domain => $idmap_domain,
+      require      => Package[$nfs::params::nfs4_package_name],
+  }
+
+  service { $nfs::params::client_service_name:
+    ensure     => running,
+    enable     => true,
+    hasstatus  => $nfs::params::client_service_hasstatus,
+    hasrestart => $nfs::params::client_service_hasrestart,
+    require    => Class['nfs::common'],
+  }
 }
