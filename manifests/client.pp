@@ -42,8 +42,10 @@ class nfs::client (
   $nfs_v4_idmap_domain = $::domain
 ) inherits nfs::params {
 
-  package { $nfs::params::client_package_name:
-    ensure => installed,
+  if ! defined(Package[$nfs::params::client_package_name]) {
+    package { $nfs::params::client_package_name:
+      ensure => installed,
+    }
   }
 
   package { $nfs::params::nfs4_package_name:

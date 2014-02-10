@@ -43,8 +43,10 @@ class nfs::server (
   $idmap_domain = $::domain
 ) inherits nfs::params {
 
-  package { $nfs::params::server_package_name:
-    ensure => present,
+  if ! defined(Package[$nfs::params::server_package_name]) {
+    package { $nfs::params::server_package_name:
+      ensure => present,
+    }
   }
 
   concat { '/etc/exports':

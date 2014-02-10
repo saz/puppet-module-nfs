@@ -1,6 +1,12 @@
 class nfs::common(
   $idmap_domain
-) {
+) inherits nfs::params {
+  if ! defined(Package[$nfs::params::client_package_name]) {
+    package { $nfs::params::client_package_name:
+      ensure => installed,
+    }
+  }
+
   augeas { '/etc/idmapd.conf':
     context => '/files/etc/idmapd.conf/General',
     lens    => 'Puppet.lns',
