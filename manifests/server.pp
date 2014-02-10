@@ -38,6 +38,8 @@
 #
 
 class nfs::server (
+  $export_root = '/export',
+  $export_root_clients = "*.${::domain}(ro,fsid=root,insecure,no_subtree_check,async,root_squash)",
   $idmap_domain = $::domain
 ) inherits nfs::params {
 
@@ -55,10 +57,21 @@ class nfs::server (
     order   => 00,
   }
 
+  concat::fragment { 'nfs_exports_root':
+    target  => '/etc/exports',
+    content => "${export_root} ${export_root_clients}\n",
+    order   => 01,
+  }
+
+  file { $export_root:
+    ensure  => directory,
+    require => Concat['/etc/exports'],
+  }
+
   if ! defined(Class['nfs::common']) {
     class { 'nfs::common':
       idmap_domain => $idmap_domain,
-      require      => Concat['/etc/exports'],
+      require      => File[$export_root],
     }
   }
 
