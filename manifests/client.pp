@@ -57,6 +57,7 @@ class nfs::client (
     class { 'nfs::common':
       idmap_domain => $idmap_domain,
       require      => Package[$nfs::params::nfs4_package_name],
+    }
   }
 
   service { $nfs::params::client_service_name:
