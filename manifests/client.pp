@@ -39,7 +39,7 @@
 #
 
 class nfs::client (
-  $nfs_v4_idmap_domain = $::domain
+  $idmap_domain = $::domain
 ) inherits nfs::params {
 
   if ! defined(Package[$nfs::params::client_package_name]) {
