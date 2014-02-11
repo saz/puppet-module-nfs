@@ -39,7 +39,8 @@
 #
 
 class nfs::client (
-  $idmap_domain = $::domain
+  $idmap_domain = $::domain,
+  $mount_root = '/srv'
 ) inherits nfs::params {
 
   if ! defined(Package[$nfs::params::client_package_name]) {

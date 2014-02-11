@@ -33,7 +33,7 @@ define nfs::client::mount (
   include nfs::client
 
   if $mount == $title {
-    $_mount = $share
+    $_mount = "${nfs::client::mount_root}/${share}"
   } else {
     $_mount = $mount
   }
