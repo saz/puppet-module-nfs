@@ -39,7 +39,7 @@
 
 class nfs::server (
   $export_root = '/export',
-  $export_root_clients = "*.${::domain}(ro,fsid=root,insecure,no_subtree_check,async,root_squash)",
+  $export_root_clients = "*.${::domain}(rw,fsid=root,insecure,no_subtree_check,root_squash)",
   $idmap_domain = $::domain
 ) inherits nfs::params {
 
