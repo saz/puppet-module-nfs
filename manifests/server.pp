@@ -82,6 +82,7 @@ class nfs::server (
     enable     => true,
     hasstatus  => $nfs::params::server_service_hasstatus,
     hasrestart => $nfs::params::server_service_hasrestart,
+    subscribe  => Concat['/etc/exports'],
     require    => Class['nfs::common'],
   }
 }
