@@ -1,46 +1,58 @@
-# == Class: nfs::server
+# ## Class: nfs::server
 #
 # Set up NFS server and exports. NFSv3 and NFSv4 supported.
 #
+# ## Parameters
 #
-# === Parameters
-#
-# [nfs_v4]
+# [export_root]
 #   NFSv4 support. Will set up automatic bind mounts to export root.
 #   Disabled by default.
 #
-# [nfs_v4_export_root]
-#   Export root, where we bind mount shares, default /export
+# [export_root]
+#   Export root
+#   Default: '/export'
+# [export_root_clients]
+#   Export root client options
+#   Default: "*.${::domain}(rw,fsid=root,insecure,no_subtree_check,no_root_squash)"
 #
-# [nfs_v4_idmap_domain]
-#  Domain setting for idmapd, must be the same across server
-#  and clients.
-#  Default is to use $domain fact.
+# [idmap_domain]
+#   Domain setting for idmapd, must be the same across server and clients.
+#   Default: $::domain
 #
-# === Examples
+# [service_enable]
+#   Enable nfs service at boot
+#   Default: true
 #
+# [service_ensure]
+#   Ensure nfs service
+#   Default: 'running'
+#
+# ## Example
+#
+#  class { nfs::server: }
+#
+# ### Unmanaged service (good for Heartbeat/Pacemaker management)
 #
 #  class { nfs::server:
-#    nfs_v4                      => true,
-#     nfs_v4_export_root_clients => "*.${::domain}(ro,fsid=root,insecure,no_subtree_check,async,root_squash)",
-#    # Generally parameters below have sane defaults.
-#    nfs_v4_export_root  => "/export",
-#    nfs_v4_idmap_domain => $::domain,
+#    service_enable = false,
+#    service_ensure = false,
 #  }
 #
-# === Authors
+# ## Authors
 #
-# Harald Skoglund <haraldsk@redpill-linpro.com>
+# Steffen Zieger <me@saz.sh>
 #
-# === Copyright
+# ## Copyright
 #
-# Copyright 2012 Redpill Linpro, unless otherwise noted.
+# Copyright 2014 Steffen Zieger
 #
 
 class nfs::server (
   $export_root = '/export',
-  $export_root_clients = "*.${::domain}(rw,fsid=root,insecure,no_subtree_check,root_squash)",
-  $idmap_domain = $::domain
+  $export_root_clients = "*.${::domain}(rw,fsid=root,insecure,no_subtree_check,no_root_squash)",
+  $idmap_domain = $::domain,
+  $service_enable = true,
+  $service_ensure = 'running'
 ) inherits nfs::params {
 
   if ! defined(Package[$nfs::params::server_package_name]) {
@@ -67,7 +79,6 @@ class nfs::server (
 
   file { $export_root:
     ensure  => directory,
-    require => Concat['/etc/exports'],
   }
 
   if ! defined(Class['nfs::common']) {
@@ -77,12 +88,25 @@ class nfs::server (
     }
   }
 
+  exec { 'reload_nfs_srv':
+    command     => $nfs::params::server_service_reload,
+    onlyif      => $nfs::params::server_service_onlyif,
+    refreshonly => true,
+    require     => Class['nfs::common'],
+    subscribe   => Concat['/etc/exports'],
+  }
+
+  if $service_ensure != false {
+    $service_ensure_real = $service_ensure
+  } else {
+    $service_ensure_real = undef
+  }
+
   service { $nfs::params::server_service_name:
-    ensure     => running,
-    enable     => true,
+    ensure     => $service_ensure_real,
+    enable     => $service_enable,
     hasstatus  => $nfs::params::server_service_hasstatus,
     hasrestart => $nfs::params::server_service_hasrestart,
-    subscribe  => Concat['/etc/exports'],
     require    => Class['nfs::common'],
   }
 }
