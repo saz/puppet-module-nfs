@@ -32,7 +32,7 @@ define nfs::client::mount (
 
   include nfs::client
 
-  if $mount == undef {
+  if $mount == $title {
     $_mount = $share
   } else {
     $_mount = $mount

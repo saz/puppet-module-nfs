@@ -17,14 +17,14 @@ define nfs::server::export (
     order   => 10,
   }
 
-  @@nfs::client::mount {"shared_${v4_export_name}_by_${::clientcert}":
+  @@nfs::client::mount { "shared_${v4_export_name}_by_${::clientcert}":
     ensure    => $ensure,
+    server    => $server,
+    share     => $v4_export_name,
     mount     => $mount,
     remounts  => $remounts,
     atboot    => $atboot,
     options   => $options,
     nfstag    => $nfstag,
-    share     => $v4_export_name,
-    server    => $server,
   }
 }
