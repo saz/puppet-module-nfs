@@ -17,7 +17,7 @@ define nfs::server::export (
     order   => 10,
   }
 
-  @@nfs::client::mount {"shared ${v4_export_name} by ${::clientcert}":
+  @@nfs::client::mount {"shared_${v4_export_name}_by_${::clientcert}":
     ensure    => $ensure,
     mount     => $mount,
     remounts  => $remounts,

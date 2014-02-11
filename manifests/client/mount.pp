@@ -40,7 +40,7 @@ define nfs::client::mount (
 
   nfs::mkdir{ $_mount: }
 
-  mount {"shared ${share} by ${::clientcert} on ${_mount}":
+  mount { "shared_${share}_by_${::clientcert}_on_${_mount}":
     ensure   => $ensure,
     device   => "${server}:/${share}",
     fstype   => 'nfs4',
