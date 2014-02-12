@@ -38,7 +38,9 @@ define nfs::client::mount (
     $_mount = $mount
   }
 
-  nfs::mkdir{ $_mount: }
+  if ! defined(Nfs::Mkdir[$_mount]) {
+    nfs::mkdir{ $_mount: }
+  }
 
   mount { "shared_${share}_by_${::clientcert}_on_${_mount}":
     ensure   => $ensure,
