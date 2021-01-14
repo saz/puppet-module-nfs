@@ -91,6 +91,7 @@ class nfs::server (
   exec { 'reload_nfs_srv':
     command     => $nfs::params::server_service_reload,
     onlyif      => $nfs::params::server_service_onlyif,
+    path        => ['/usr/local/sbin', '/usr/local/bin', '/usr/sbin', '/usr/bin', '/sbin', '/bin'],
     refreshonly => true,
     require     => Class['nfs::common'],
     subscribe   => Concat['/etc/exports'],

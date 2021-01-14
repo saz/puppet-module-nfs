@@ -4,6 +4,8 @@ class nfs::params {
     'Debian': {
       $server_package_name = 'nfs-kernel-server'
       $server_service_name = 'nfs-kernel-server'
+      $server_service_onlyif = "systemctl status ${server_service_name}"
+      $server_service_reload = 'exportfs -ra'
       $server_service_hasstatus = true
       $server_service_hasrestart = true
       $client_package_name = 'nfs-common'
